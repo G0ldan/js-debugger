@@ -12,17 +12,15 @@ global[id] = {
     stackLimit: 10
 }
 
-function deep_stringify(obj) {
-    const stack = new Error().stack
-    const stackSize = stack.split('\n').length
+function deep_stringify(obj, stack = 0) {
     var json = ''
 
-    if (stackSize > global[id].stackLimit)
-        return "\"\""
+    if (stack > global[id].stackLimit)
+        return "\"STACK_LIMIT_REACHED\""
     else if (obj instanceof Array) {
         json += '['
         for (var i = 0; i < obj.length; i++) {
-            json += deep_stringify(obj[i])
+            json += deep_stringify(obj[i], stack + 1)
             if (i < obj.length - 1)
                 json += ', '
         }
@@ -31,7 +29,7 @@ function deep_stringify(obj) {
         json += '{'
         var keys = Object.keys(obj)
         for (var i = 0; i < keys.length; i++) {
-            json += '"' + keys[i] + '": ' + deep_stringify(obj[keys[i]])
+            json += '"' + keys[i] + '": ' + deep_stringify(obj[keys[i]], stack + 1)
             if (i < keys.length - 1)
                 json += ', '
         }
@@ -76,12 +74,14 @@ module.exports = {
 
         console.log(`Connected to http://${host}:${port}`)
 
-        return (...args) => axios.post(`http://${host}:${port}/addSeveral`, deep_stringify(args), {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .catch(err => {})
+        return async (...args) => {
+            return axios.post(`http://${host}:${port}/addSeveral`, deep_stringify(args), {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .catch(err => {})
+        }
     },
     set_stack_limit: (limit) => {
         global[id].stackLimit = limit

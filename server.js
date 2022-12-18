@@ -18,7 +18,9 @@ app.listen(port, host, () => {
 })
 
 app.use(
-    express.json(),
+    express.json({
+        limit: '50mb'
+    }),
     (req, res, next) => {
         app.locals.lastPing = Date.now()
         next()
