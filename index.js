@@ -9,7 +9,9 @@ const connection = require('./connection')
 const id = uuidv4()
 
 global[id] = {
-    stackLimit: 10
+    stackLimit: 10,
+    host: "",
+    port: 0
 }
 
 function deep_stringify(obj, stack = 0) {
@@ -44,7 +46,7 @@ function deep_stringify(obj, stack = 0) {
 }
 
 module.exports = {
-    debug: async (name = 'Debug', host = '127.0.0.1', _port = 0) => {
+    connect: async (name = 'Debug', host = '127.0.0.1', _port = 0) => {
         const {
             port,
             pid
@@ -72,17 +74,29 @@ module.exports = {
             await new Promise(resolve => setTimeout(resolve, 100))
         }
 
-        console.log(`Connected to http://${host}:${port}`)
+        global[id].host = host
+        global[id].port = port
 
-        return async (...args) => {
-            return axios.post(`http://${host}:${port}/addSeveral`, deep_stringify(args), {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .catch(err => {})
-        }
+        console.log(`Connected to http://${host}:${port}`)
     },
+    d: async (...args) => axios.post(`http://${global[id].host}:${global[id].port}/addSeveralData`, deep_stringify(args), {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch(err => {}),
+    clear: async () =>
+        axios
+        .post(
+            `http://${global[id].host}:${global[id].port}/addAction`, {
+                action: "clear"
+            }, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+        )
+        .catch(err => {}),
     set_stack_limit: (limit) => {
         global[id].stackLimit = limit
     }

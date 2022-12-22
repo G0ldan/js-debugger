@@ -1,5 +1,6 @@
 const express = require("express")
 const app = express()
+const fs = require("fs")
 
 if (process.argv.length !== 5) {
     console.error("Invalid arguments")
@@ -28,39 +29,37 @@ app.use(
 )
 
 app.get("/", (req, res) => {
-    res.send(`
-    <script>
-        document.title = "${name}"
-        setInterval(() => {
-            fetch("/fetch")
-                .then(res => res.json())
-                .then(data => {
-                  if (data.type === "several")
-                    console.debug(...data.data)
-                  else if (data.type === "single")
-                    console.debug(data.data)
-                })
-            .catch(err => {})
-        }, 2000)
-    </script>
-    `)
+    const script = fs.readFileSync(__dirname + "/DOMscript.js", "utf8")
+        .replace("${name}", name)
+
+    res.send(`<script>${script}</script>`)
 })
 
 app.get("/fetch", (req, res) => {
     res.json(app.locals.queue.shift())
 })
 
-app.post("/addSeveral", (req, res) => {
+app.post("/addAction", (req, res) => {
     app.locals.queue.push({
-        type: "several",
+        type: "action",
+        action: req.body.action
+    })
+    res.status(200).send("OK")
+})
+
+app.post("/addSeveralData", (req, res) => {
+    app.locals.queue.push({
+        type: "data",
+        subType: "several",
         data: req.body
     })
     res.status(200).send("OK")
 })
 
-app.post("/add", (req, res) => {
+app.post("/addSingleData", (req, res) => {
     app.locals.queue.push({
-        type: "single",
+        type: "data",
+        subType: "single",
         data: req.body
     })
     res.status(200).send("OK")
