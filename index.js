@@ -46,7 +46,10 @@ function deep_stringify(obj, stack = 0) {
 }
 
 module.exports = {
-    connect: async (name = 'Debug', host = '127.0.0.1', _port = 0) => {
+    connect: async (name = 'Debug', host = '127.0.0.1', _port = 0, params = {}) => {
+
+        host = host || '127.0.0.1'
+
         const {
             port,
             pid
@@ -55,12 +58,14 @@ module.exports = {
         if (pid > 0)
             console.log(`Process ${pid} is already running on port ${port}`)
         else { // means the process has to be created
-            child = childProcess.fork(__dirname + "/server.js", [name, host, port], {
+            const child = childProcess.fork(__dirname + "/server.js", [name, host, port], {
                 detached: true
             })
-            console.log(`Create new process (${child.pid}) running on port ${port}`)
             child.unref()
-            open(`http://${host}:${port}`)
+            if (params.openOnStartup === undefined ||
+                (params.openOnStartup != undefined && params.openOnStartup === true))
+                open(`http://${host}:${port}`)
+            console.log(`Create new process (${child.pid}) running on port ${port}`)
         }
 
         var isReady = false

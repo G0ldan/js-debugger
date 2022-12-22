@@ -1,11 +1,11 @@
-const net = require('net')
+const net = require("net")
 const server = net.createServer()
-const axios = require('axios')
+const axios = require("axios")
 
 async function is_port_available(_port) {
     return new Promise((resolve, reject) => {
         server.unref()
-        server.on('error', () => resolve(0))
+        server.on("error", () => resolve(0))
         server.listen(_port, () => {
             const {
                 port
@@ -16,12 +16,14 @@ async function is_port_available(_port) {
 }
 
 async function is_port_already_used(host, port) {
-    const isAvailable = await axios.get(`http://${host}:${port}/ping`)
-        .then(res => res.data === 'pong' ? true : false)
+    const isAvailable = await axios
+        .get(`http://${host}:${port}/ping`)
+        .then(res => (res.data === "pong" ? true : false))
         .catch(err => false)
 
     if (isAvailable) {
-        const pid = await axios.get(`http://${host}:${port}/pid`)
+        const pid = await axios
+            .get(`http://${host}:${port}/pid`)
             .then(res => res.data)
             .catch(err => -1)
         if (pid > 0) {
@@ -49,9 +51,9 @@ async function connection(host, port) {
     }
 
     for (let i = 0; i < defautPorts.length; i++) {
-        if ({
+        if (({
                 pid
-            } = await is_port_already_used(host, defautPorts[i]))
+            } = await is_port_already_used(host, defautPorts[i])))
             return {
                 port: defautPorts[i],
                 pid: pid

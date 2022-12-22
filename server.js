@@ -74,5 +74,5 @@ app.get("/pid", (req, res) => {
 })
 
 setInterval(() => {
-    if (Date.now() - app.locals.lastPing > 10000) process.exit()
+    if (Date.now() - app.locals.lastPing > 3000) process.exit()
 })
