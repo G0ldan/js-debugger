@@ -46,9 +46,11 @@ function deep_stringify(obj, stack = 0) {
 }
 
 module.exports = {
-    connect: async (name = 'Debug', host = '127.0.0.1', _port = 0, params = {}) => {
+    connect: async (name = 'Debug', host = '127.0.0.1', _port = 0, AdditionalParams = {}) => {
 
+        name = name || 'Debug'
         host = host || '127.0.0.1'
+        _port = !(_port >= 0) ? 0 : _port
 
         const {
             port,
@@ -62,8 +64,8 @@ module.exports = {
                 detached: true
             })
             child.unref()
-            if (params.openOnStartup === undefined ||
-                (params.openOnStartup != undefined && params.openOnStartup === true))
+            if (AdditionalParams.open === undefined ||
+                (AdditionalParams.open != undefined && AdditionalParams.open === true))
                 open(`http://${host}:${port}`)
             console.log(`Create new process (${child.pid}) running on port ${port}`)
         }
